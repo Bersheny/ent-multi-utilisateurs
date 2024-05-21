@@ -1,0 +1,55 @@
+GÉRER LES UTILISATEURS POUR DISK.PHP
+====================================
+
+- Précréer un répertoire USERS (C:/WAMP/WWW/USERS/).
+- Chaque utilisateur correpond à un répertoire dans USERS.
+- Connexion d'un user avec son nom et son mot de passe.
+	- Vérifier dans la BD que l'utilisateur existe.
+	- Créer une session avec :
+		- Le nom de l'utilisateur (ex : DUPONT).
+		- Le répertoire racine de l'utilisateur (ex : C:/WAMP/WWW/USERS/DUPONT/).
+		- Le répertoire courant relatif à la racine de l'utilisateur (ex : PLANS/APPARTEMENT/ ==> C:/WAMP/WWW/USERS/DUPONT/PLANS/APPARTEMENT/)
+
+
+
+SYNTAXE DES COMMANDES		HTTP (POST)
+=====================
+
+LOGIN UserName Password		CMD = LOGIN & USERNAME = Dupont & PASSWORD = Chapeau
+				               CMD = LOGIN & PARAM1 = Dupont & PARAM2 = Chapeau
+LOGOUT				         CMD = LOGOUT
+DIR				            CMD = DIR
+CD Plan				         CMD = CD & TARGET = PLANS
+                           CMD = CD & PARAM1 = PLANS
+
+
+
+RÉPONSES STANDARDISÉES
+======================
+JSON                                                  JSON
+{                                                     {
+   cmd:"DIR",   // Rappel de la commande envoyée         cmd:"CD Plans",
+   status:OK,   // Statut : Erreur ou OK                 status: "OK",
+   content:     // Contenu de la réponse                 content: null
+   [                                                  }
+      { type:DIR,             name:Divers }     // Un répertoire
+      { type:FILE, size: 789, name:plan.doc }   // Un fichier
+      { type:FILE, size: 789, name:info.txt }
+   ]
+}
+
+------------------------------------------------------------------------------
+Déterminer la liste des commandes possibles (avec leurs paramètres) disponibles sur le disk-manager (disk.php).
+Expliquer, pour chaque commande, son rôle et son effet sur le disque.
+Donner un exemple de syntaxe Http de la commande, avec ses paramètres.
+Donner un exemple de syntaxe JSON de la réponse avec cette commande.
+
+login xyz
+logout
+dir
+createfile
+writefile
+readfile
+deletefile
+makedir
+rmdir

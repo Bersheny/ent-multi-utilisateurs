@@ -1,0 +1,13 @@
+SESSION par Utilisateur
+===============
+user: "DUPONT'						Username de l'utilisateur
+home: "C:/wamp64/www/ent-multi_utilisateurs/users/dupont"	Home de l'utilisateur
+pwd: "/"							Dupont à sa racine (home)
+         "/plans/"						Dupont dans son sous-répertoire /plans
+         "/plans/appartement/"					Dupont dans son sous-répertoire /plans/appartement 
+
+CMD=LOGIN&PARAM1=dupont&PARAM2=chapeau123
+
+user:"dupont"				Username de l'utilisateur
+home:"C:/wamp64/www/users/dupont"	Home de l'utilisateur
+pwd:"/"					Dupont à sa racine (home)

@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="bootstrap.css" rel="stylesheet" />
+    <title>ENT Multi-Utilisateurs</title>
+    <script>
+        var console_debug = null;
+
+        function BODY_onLoad() {
+            console_debug = document.getElementById('console_debug');
+            sendRequest('WHOAMI')
+        }
+
+        function clear() {
+            console_debug.value = "";
+        }
+
+        function write(texte) {
+            console_debug.value += texte;
+        }
+
+        function writeln(texte) {
+            console_debug.value += texte + "\n";
+        }
+
+        const xhttp = new XMLHttpRequest();
+
+        function sendRequest(command, params = {}) {
+            clear();
+            writeln('DEBUG');
+            writeln('-----------------------\n');
+
+            let queryString = `disk.php?CMD=${command}`;
+            for (const key in params) {
+                queryString += `&${key}=${params[key]}`;
+            }
+
+            xhttp.open("GET", queryString);
+            xhttp.send();
+        }
+
+        function register() {
+            const username = document.getElementById('USERNAME').value;
+            const password = document.getElementById('PASSWORD').value;
+
+            sendRequest('REGISTER', { PARAM1: username, PARAM2: password });
+        }
+
+        function login() {
+            const username = document.getElementById('USERNAME').value;
+            const password = document.getElementById('PASSWORD').value;
+
+            sendRequest('LOGIN', { PARAM1: username, PARAM2: password });
+        }
+
+        function logout() {
+            sendRequest('LOGOUT');
+        }
+
+        function pwd() {
+            sendRequest('DIR');
+        }
+
+        function home() {
+            sendRequest('HOME');
+        }
+
+        function whoAmI() {
+            sendRequest('WHOAMI');
+        }
+
+        function createFile() {
+            const filename = prompt("Enter file name:");
+            const content = prompt("Enter file content:");
+
+            if (filename !== null && filename.trim() !== '') {
+                sendRequest('CREATEFILE', { PARAM1: filename, PARAM2: content });
+            } else {
+                alert('Nom ou contenu invalide');
+            }
+        }
+
+        function writeToFile() {
+            const filename = prompt("Enter file name:");
+            const content = prompt("Enter file content:");
+
+            if (filename !== null && content !== null && filename.trim() !== '' && content.trim() !== '') {
+                sendRequest('WRITEFILE', { PARAM1: filename, PARAM2: content });
+            } else {
+                alert('Nom ou contenu invalide');
+            }
+        }
+
+        function readFile() {
+            const filename = prompt("Enter file name:");
+
+            sendRequest('READFILE', { PARAM1: filename });
+        }
+
+        function deleteFile() {
+            const filename = prompt("Enter file name:");
+
+            sendRequest('DELETEFILE', { PARAM1: filename });
+        }
+
+        function createDirectory() {
+            const dirname = prompt("Enter directory name:");
+
+            if (dirname !== null && dirname.trim() !== '') {
+                sendRequest('MKDIR', { PARAM1: dirname });
+            } else {
+                alert('Nom ou contenu invalide');
+            }
+        }
+
+        function removeDirectory() {
+            const dirname = prompt("Enter directory name:");
+
+            sendRequest('RMDIR', { PARAM1: dirname });
+        }
+
+        // Modify the 'CD' function to handle directory content
+        function cd() {
+            sendRequest('CD');
+        }
+
+        // Add a new function to create buttons dynamically
+        function displayDirectoryContent(content) {
+            // Clear existing buttons
+            clear();
+
+            // Display buttons for each item in the directory
+            for (const item in content) {
+                // Create a button element
+                const button = document.createElement('button');
+                button.textContent = `${item} (${content[item]})`;
+
+                // Attach a click event to the button
+                button.addEventListener('click', function () {
+                    changeDirectory(item);
+                });
+
+                // Append the button to the console_debug element
+                console_debug.appendChild(button);
+            }
+        }
+
+        // Modify the changeDirectory function to update the session variable
+        function changeDirectory(directoryName) {
+            sendRequest('CD', { PARAM1: directoryName });
+        }
+
+        // Update the xhttp.onload function to handle directory content
+        xhttp.onload = function () {
+            const response = JSON.parse(xhttp.responseText);
+
+            // Check if the response contains an error
+            if (response.error) {
+                writeln('Error: ' + response.error);
+                return;
+            }
+
+            if (response.cmd === 'DIR') {
+                const content = response.content;
+                const currentDir = response.debug;
+
+                // Clear existing buttons
+                clear();
+
+                // Display the directory content in the console_debug element
+                for (const item in content) {
+                    writeln(`${item} - ${content[item]}`);
+                }
+
+                // Display the current directory path
+                writeln('Current Directory: ' + currentDir);
+            } else {
+                const texte = response.content;
+                writeln(texte);
+            }
+        };
+
+    </script>
+</head>
+
+<body onLoad='BODY_onLoad()'>
+    <div class="col-lg-12 mx-auto p-5 py-md-5">
+        <div class="text-center">
+
+            <div class="pb-4">
+                <div>
+                    <h1>ENT Multi-Utilisateurs</h1>
+                </div>
+
+                <div>
+                    Bienvenue !
+                </div>
+            </div>
+
+            <div>
+                <div class="pt-2 input-group">
+                    <span class="input-group-text" id="basic-addon1">Nom d'utilisateur</span>
+                    <input class="form-control" type="text" id="USERNAME" placeholder="Nom d'utilisateur" required />
+                </div>
+                <div class="pt-4 input-group">
+                    <span class="input-group-text" id="basic-addon1">Mot de passe</span>
+                    <input class="form-control" type="password" id="PASSWORD" placeholder="Mot de passe" required />
+                </div>
+
+                <div class="pt-4">
+                    <button class="btn btn-primary" onClick="register()">
+                        S'enregistrer
+                    </button>
+
+                    <button class="btn btn-primary" onClick="login()">
+                        Se connecter
+                    </button>
+
+                    <button class="btn btn-primary" onClick='pwd()'>
+                        PWD
+                    </button>
+
+                    <button class="btn btn-primary" onClick='cd()'>
+                        CD
+                    </button>
+
+                    <button class="btn btn-primary" onClick='home()'>
+                        HOME
+                    </button>
+
+                    <button class="btn btn-primary" onClick='whoAmI()'>
+                        WHOAMI
+                    </button>
+
+                    <button class="btn btn-primary" onClick='logout()'>
+                        Se déconnecter
+                    </button>
+                </div>
+
+                <div class="pt-2">
+                    <button class="btn btn-primary" onClick='createFile()'>
+                        Créer un fichier
+                    </button>
+
+                    <button class="btn btn-primary" onClick='writeToFile()'>
+                        Écrire dans un fichier
+                    </button>
+
+                    <button class="btn btn-primary" onClick='readFile()'>
+                        Lire un fichier
+                    </button>
+
+                    <button class="btn btn-primary" onClick='deleteFile()'>
+                        Supprimer un fichier
+                    </button>
+                </div>
+
+                <div class="pt-2">
+                    <button class="btn btn-primary" onClick='createDirectory()'>
+                        Créer un répertoire
+                    </button>
+
+                    <button class="btn btn-primary" onClick='removeDirectory()'>
+                        Supprimer un répertoire
+                    </button>
+                </div>
+
+                <div class="pt-4">
+                    <textarea id="console_debug" rows="20" cols="60"></textarea>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

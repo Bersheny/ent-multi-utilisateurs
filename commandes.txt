@@ -1,0 +1,183 @@
+Commandes du Disk-Manager		Forme de la requête PHP
+========================		Forme de la requête JSON
+
+Un Disk-Manager peut être écrit en n'importe quel langage !
+ex. PHP, Python-Server, JavaScript-Server, ASP, VB, Pascal.
+
+Donc, chaque étudiant peut programmer sa propre version de Disk-Manager.
+
+PAR CONTRE, chaque Disk-Manager doit respecter la même syntaxe de commandes et de résultats pour pouvoir être interchangeable.
+
+
+COMMANDES
+=========
+
+Toutes les commandes ont la même forme :
+
+disk.php ? CMD = COMMANDE
+disk.php ? CMD = COMMANDE & PARAM1 = Valeur1
+disk.php ? CMD = COMMANDE & PARAM1 = Valeur1 & PARAM2 = Valeur2
+disk.php ? CMD = COMMANDE & PARAM1 = Valeur1 & PARAM2 = Valeur2 & PARAM3 = Valeur3
+
+Le nom de la commande et des paramètres sont toujours en majuscules.
+
+Toutes les réponses (JSON) ont la même forme :
+
+{
+	cmd:"disk.php ? CMD = COMMANDE & PARAM1 = Valeur1",
+	
+	status:"OK" ou
+
+	status:"ERROR",
+	errormessage: "Pas assez (trop) de paramètres.",
+
+	content: ...
+}
+
+Erreurs possibles :
+- Pas assez (trop) de paramètres.
+- Le paramètre 2 doit être numérique.
+- Identifiants incorrects
+- Commande inconnue : COMMANDE
+- Le fichier "Fichier.txt" n'existe pas
+- Le répertoire "Plans" existe déjà
+---------------------------------------------------------------------------------------------------------
+Autre possibilité :
+
+{
+	cmd:"disk.php ? CMD = COMMANDE & PARAM1 = Valeur1",
+	
+	error:null,
+	error:"Pas assez (trop) de paramètres.",
+
+	content: ...
+}
+
+
+
+LOGIN 		disk.php ? CMD = LOGIN & PARAM1 = Dupont & PARAM2 = Chapeau123
+	
+Rôle		Permet de se connecter grâce à son nom d’utilisateur et son mot de passe.
+
+Serveur		Vérifier, dans la BD USERS, que le couple Username / Password existe.
+		Génère une $_SESSION pour définir l’utilisateur connecté.
+		$_SESSION['username']	// Récupérer rapidement les infos de l'utilisateur.
+		$_SESSION['id']		// Récupérer rapidement les infos de l'utilisateur.
+		$_SESSION['?']		// à voir.
+		Enregistrer la date-heure de cette connexion dans le champ
+		lastLogin de la BD...
+
+Réponse 		{
+		cmd:"disk.php ? CMD = LOGIN & PARAM1 = Valeur1 & PARAM2 = Valeur2",
+		status:"OK",
+		content: ...
+		}
+
+Erreur		Si le couple Username / Password n'existe pas, renvoyer l'erreur :
+		status:"ERROR : Identifiants inconnus"
+
+---------------------------------------------------------------------------------------------------------
+
+LOGOUT		disk.php ? CMD = LOGOUT
+
+Rôle		Déconnecter l'utilisateur courant ($_SESSION).
+
+Serveur		Supprimer la $_SESSION.
+		Enregistrer la date-heure de cette déconnexion dans le champ.
+		lastLogin de la BD...
+
+Réponse 		{
+		cmd:"disk.php ? CMD = LOGOUT",
+		status:"OK",
+		content: null
+		}
+
+Erreur		Si personne n'est connecté, erreur !
+		status: "ERROR : Aucun utilisateur n'est connecté"
+
+---------------------------------------------------------------------------------------------------------
+
+ADDUSER	disk.php ? CMD = ADDUSER & PARAM1= Dupont & PARAM2 = Chapeau123 & PARAM3 = ADMIN
+		disk.php ? CMD = ADDUSER & PARAM1= Dupont & PARAM2 = Chapeau123 & PARAM3 = USER
+
+Rôle		Créer un nouvel utilisateur grâce à son Username et Password.
+		Opération réservé à un administrateur (champ de la BD USERS.status).
+
+Serveur		Vérifier si Username n'existe pas ALORS enregistrer le couple Username / Password dans la BD sinon ça dégage, terminé bonsoir.
+
+Réponse 		{
+		cmd:"disk.php ? CMD = ADDUSER & PARAM1= Dupont & PARAM2 = Chapeau123 & PARAM3 = ADMIN",
+		status:"OK",
+		content: null
+		}
+
+Erreur		Si Username existe dans la BD USERS
+			status:"ERROR : L'utilisateur existe déjà"
+		Si l'utilisateur courant n'est pas admin
+			status:"ERROR : Vous n'avez pas les droits de créer un utilisateurs"
+		Si l'utilisateur courant n'est pas défini
+			status:"ERROR : Aucun utilisateur n'est connecté"
+
+---------------------------------------------------------------------------------------------------------
+
+DELUSER		disk.php ? CMD = DELUSER & PARAM1= Dupont
+		disk.php ? CMD = DELUSER & PARAM1= Dupont
+
+Rôle		Supprimer un utilisateur grâce à son Username.
+		Opération réservé à un administrateur (champ de la BD USERS.status).
+
+Serveur		Vérifier si Username n'existe pas ALORS supprimer le couple Username / Password dans la BD sinon ça dégage, terminé bonsoir.
+
+Réponse 		{
+		cmd:"disk.php ? CMD = DELUSER & PARAM1= Dupont",
+		status:"OK",
+		content: null
+		}
+
+Erreur		Si Username n'existe pas dans la BD USERS
+			status:"ERROR : L'utilisateur n'existe pas"
+		Si l'utilisateur courant n'est pas admin
+			status:"ERROR : Vous n'avez pas les droits de créer un utilisateurs"
+		Si l'utilisateur courant n'est pas défini
+			status:"ERROR : Aucun utilisateur n'est connecté"
+
+---------------------------------------------------------------------------------------------------------
+
+CHANGEPASSWORD	disk.php ? CMD = CHANGEPASSWORD & PARAM1 = Chapeau123 & PARAM2 = Bonnet123
+
+à voir...
+
+---------------------------------------------------------------------------------------------------------
+
+DIR		disk.php ? CMD = DIR
+
+Rôle		Renvoyer le répertoire courant de l'utilisateur courant.
+
+Serveur		Ne modifie rien.
+
+Réponse 		{
+		cmd:"disk.php ? CMD = DIR",
+		status:"OK",
+		content: [
+			{type:"FILE", name:"fichier1.txt", date:"18/10/2023-14:34:26", size:15}, 
+			{type:"FILE", name:"fichier2.txt", date:"18/10/2023-14:45:26", size:22}, 
+			{type:"DIR" name="Dir1", date:"17/10/2023-14:45:26"},
+			{type:"DIR" name="Dir2", date:"18/10/2023-14:45:26"}
+		   ]
+		}
+
+Erreur		
+
+---------------------------------------------------------------------------------------------------------
+
+date:"18:10:2022-14:45:26"
+
+date:"2023/10/17-14:45:26"
+date:"2022/10/18-14:45:26" 		Permet des comparaisons de strings
+
+date:"20231017144526" 	string
+date:20221018144526	integer
+
+
+
+---------------------------------------------------------------------------------------------------------
