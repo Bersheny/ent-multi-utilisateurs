@@ -41,17 +41,14 @@ function registerUser($username, $password)
         if (!file_exists($userDirectory)) {
             mkdir($userDirectory);
 
-            // Respond with success message
             sendResponse('REGISTER', 'Enregistrement réussi', null);
         } else {
-            // If directory creation fails, delete the user record from the database
             $deleteUserSql = "DELETE FROM users WHERE username='$username'";
             $connexion->query($deleteUserSql);
 
             sendResponse('REGISTER', null, 'Erreur lors de la création du répertoire utilisateur');
         }
     } else {
-        // If database insertion fails, respond with an error message
         sendResponse('REGISTER', null, 'Erreur lors de l\'enregistrement');
     }
 }
@@ -79,9 +76,11 @@ function sendResponse($cmd, $content = null, $error = null)
         'cmd' => $cmd,
         'content' => $content,
         'error' => $error,
-        'debug' => count($_SESSION)
     );
-    echo json_encode($response, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
+
+    echo json_encode($response, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+//    echo $cmd.' '.$content.' '.$error;
+
     exit();
 }
 
@@ -107,6 +106,7 @@ if (isset($_GET['CMD'])) {
                 sendResponse('REGISTER', null, 'Pas assez de paramètres.');
             }
             break;
+
         case 'LOGIN':
             if (isset($_GET['PARAM1']) && isset($_GET['PARAM2'])) {
                 $username = $_GET['PARAM1'];
@@ -125,6 +125,7 @@ if (isset($_GET['CMD'])) {
                 sendResponse('LOGIN', null, 'Pas assez de paramètres.');
             }
             break;
+
         case 'LOGOUT':
             if (isset($_SESSION["username"])) {
                 session_destroy();
@@ -133,60 +134,52 @@ if (isset($_GET['CMD'])) {
                 sendResponse('LOGOUT', null, 'Aucun utilisateur n\'est connecté');
             }
             break;
+
         case 'WHOAMI':
             if (count($_SESSION)) {
-                sendResponse('WHOAMI', $_SESSION["username"], null);
+                sendResponse('WHOAMI', $_SESSION["username"]);
             } else {
                 sendResponse('WHOAMI', null, 'Aucun utilisateur n\'est connecté');
             }
             break;
-        // Modify the 'DIR' case to list contents similar to "dir" command
+
+        case 'PWD':
+            if (count($_SESSION)) {
+                sendResponse('PWD', $_SESSION["pwd"], null);
+            } else {
+                sendResponse('PWD', null, 'Aucun utilisateur n\'est connecté');
+            }
+            break;
+
         case 'DIR':
-            if (count($_SESSION) && isset($_SESSION['pwd'])) {
-                $currentDir = $_root . $_SESSION["username"] . $_SESSION['pwd'];
-
-                if (is_dir($currentDir)) {
-                    $dirContent = scandir($currentDir);
-                    $dirContent = array_diff($dirContent, array('..', '.'));
-
-                    // Display the directory content as an associative array with types (file or directory)
-                    $formattedContent = array();
-                    foreach ($dirContent as $item) {
-                        $itemPath = $currentDir . '/' . $item;
-                        $formattedContent[$item] = is_dir($itemPath) ? 'Directory' : 'File';
-                    }
-
-                    sendResponse('DIR', $formattedContent, $_SESSION['pwd']);
-                } else {
-                    sendResponse('DIR', null, 'Current directory does not exist');
-                }
+            if (count($_SESSION)) {
+                $dir = $_SESSION["home"] . $_SESSION["pwd"];
+                $fileList = scandir($dir);
+                // $fileList = array_diff($fileList, array('..', '.'));
+                sendResponse('DIR', $fileList, null);
             } else {
-                sendResponse('DIR', null, 'No user is connected');
+                sendResponse('DIR', null, 'Aucun utilisateur n\'est connecté');
             }
             break;
+
         case 'CD':
-            if (count($_SESSION) && isset($_SESSION['pwd'])) {
-                $currentDir = $_root . $_SESSION["username"] . $_SESSION['pwd'];
-
-                if (is_dir($currentDir)) {
-                    $dirContent = scandir($currentDir);
-                    $dirContent = array_diff($dirContent, array('..', '.'));
-
-                    sendResponse('CD', $dirContent, $_SESSION['pwd']);
-                } else {
-                    sendResponse('CD', null, 'Current directory does not exist');
-                }
+            if (count($_SESSION) && isset($_GET['PARAM1'])) {
+                $_SESSION['pwd'] = $_SESSION['pwd'] . $_GET['PARAM1'] . "/";
+                sendResponse('CD', $_SESSION["pwd"] , null);
             } else {
-                sendResponse('CD', null, 'No user is connected');
+                sendResponse('CD', null, 'Aucun utilisateur n\'est connecté');
             }
             break;
+
         case 'HOME':
             if (count($_SESSION)) {
-                sendResponse('HOME', $_SESSION["home"], null);
+                $_SESSION["pwd"] = "/";
+                sendResponse('HOME', $_SESSION["pwd"], null);
             } else {
                 sendResponse('HOME', null, 'Aucun utilisateur n\'est connecté');
             }
             break;
+
         case 'CREATEFILE':
             if (isset($_SESSION["username"]) && isset($_GET['PARAM1']) && isset($_GET['PARAM2'])) {
                 $filePath = 'C:/wamp64/www/ent-multi_utilisateurs/users/' . $_SESSION["username"] . '/' . $_GET['PARAM1'];
@@ -200,6 +193,7 @@ if (isset($_GET['CMD'])) {
                 sendResponse('CREATEFILE', null, 'Aucun utilisateur n\'est connecté ou pas assez de paramètres');
             }
             break;
+
         case 'WRITEFILE':
             if (isset($_SESSION["username"]) && isset($_GET['PARAM1']) && isset($_GET['PARAM2'])) {
                 $filePath = 'C:/wamp64/www/ent-multi_utilisateurs/users/' . $_SESSION["username"] . '/' . $_GET['PARAM1'];
@@ -214,6 +208,7 @@ if (isset($_GET['CMD'])) {
                 sendResponse('WRITEFILE', null, 'Aucun utilisateur n\'est connecté ou pas assez de paramètres');
             }
             break;
+
         case 'READFILE':
             if (isset($_SESSION["username"]) && isset($_GET['PARAM1'])) {
                 $filePath = 'C:/wamp64/www/ent-multi_utilisateurs/users/' . $_SESSION["username"] . '/' . $_GET['PARAM1'];
@@ -227,6 +222,7 @@ if (isset($_GET['CMD'])) {
                 sendResponse('READFILE', null, 'Aucun utilisateur n\'est connecté ou pas assez de paramètres');
             }
             break;
+
         case 'DELETEFILE':
             if (isset($_SESSION["username"]) && isset($_GET['PARAM1'])) {
                 $filePath = 'C:/wamp64/www/ent-multi_utilisateurs/users/' . $_SESSION["username"] . '/' . $_GET['PARAM1'];
@@ -241,6 +237,7 @@ if (isset($_GET['CMD'])) {
                 sendResponse('DELETEFILE', null, 'Aucun utilisateur n\'est connecté ou pas assez de paramètres');
             }
             break;
+
         case 'MKDIR':
             if (isset($_SESSION["username"]) && isset($_GET['PARAM1'])) {
                 $dirPath = 'C:/wamp64/www/ent-multi_utilisateurs/users/' . $_SESSION["username"] . '/' . $_GET['PARAM1'];
@@ -255,6 +252,7 @@ if (isset($_GET['CMD'])) {
                 sendResponse('MKDIR', null, 'Aucun utilisateur n\'est connecté ou pas assez de paramètres');
             }
             break;
+
         case 'RMDIR':
             if (isset($_SESSION["username"]) && isset($_GET['PARAM1'])) {
                 $dirPath = 'C:/wamp64/www/ent-multi_utilisateurs/users/' . $_SESSION["username"] . '/' . $_GET['PARAM1'];

@@ -1,0 +1,46 @@
+--------------------------------------------------------------------------------
+COMMANDES VALIDEES :
+REGISTER	param1=userName  param2=password	Usage réservé à un administrateur (sinon erreur)
+LOGIN		param1=userName  param2=password	vérfier que l'utilisateur existe dans la BD et le connecter
+LOGOUT		rien					-> rien
+WHOAMI		rien					-> username de l'utilisateur courant
+DIR		rien					Renvoyer le contenu du répertoire courant
+							-> tableau d'entrées de répertoire (File ou DIR)
+CD		param1=dirname				Changer le pwd de l'utilisateur courant
+HOME		rien					Définir le pwd sur '/'
+MKDIR		param1=newDirName			Créer un répertoire     dans le répertoire courant
+RMDIR		param1=dirName				Supprimer un répertoire dans le répertoire courant
+
+--------------------------------------------------------------------------------
+COMMANDES POSSIBLES :
+CREATEFILE	param1=sourceName			Créer un nouveau fichier dans le répertoire courant
+COPYFILE		param1=sourceName  param2=targetName	Copier un fichier
+RENAMEFILE	param1=sourceName  param2=targetName	Renommer  un fichier
+REMOVEFILE	param1=sourceName  			Supprimer un fichier		DELFILE ?
+
+READFILE	param1=sourceName  			-> Contenu du fichier : tableau d'octets
+WRITEFILE	param1=sourceName  param2=à_préciser	Enrtegistrer le contenu d'un fichier
+
+COPYDIR		param1=sourceName  param2=targetName	Copier un répertoire
+RENAMEDIR	param1=sourceName  param2=targetName	Renommer  un répertoire
+--------------------------------------------------------------------------------
+AMELIORATION POSSIBLES :
+DEL		param1=sourceName 			Supprimer un fichier ou un répertoire en fonction du type de <sourceName>
+COPY		param1=sourceName  param2=targetName	Copier    un fichier ou un répertoire en fonction du type de <sourceName>
+
+SIZES		rien					Renvoyer les tailles disque de l'utilisateur courant
+							taille-totale, taille-occupée, taille-disponible
+--------------------------------------------------------------------------------
+REPONSE JSON :
+{
+	cmd:"DIR",
+	error:null,	ou "Le message d'erreur"
+	content:[
+		{type:"DIR" ,name:"Plans"    ,date:"2023/12/20-12:34"},
+		{type:"DIR" ,name:"DS"       ,date:"2023/01/23-23:45"},
+		{type:"FILE",name:"Liste.txt",date:"2023/01/12-01:23",size:1245},
+		{type:"FILE",name:"Admis.txt",date:"2024/07/01-12:01",size:0}
+	]
+}
+--------------------------------------------------------------------------------
+

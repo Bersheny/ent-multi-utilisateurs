@@ -14,7 +14,7 @@
 
         function BODY_onLoad() {
             console_debug = document.getElementById('console_debug');
-            // sendRequest('WHOAMI');
+            sendRequest('WHOAMI')
         }
 
         function clear() {
@@ -33,6 +33,8 @@
 
         function sendRequest(command, params = {}) {
             clear();
+            writeln('DEBUG');
+            writeln('-----------------------\n');
 
             let queryString = `disk.php?CMD=${command}`;
             for (const key in params) {
@@ -40,15 +42,6 @@
             }
 
             xhttp.open("GET", queryString);
-            
-            xhttp.onreadystatechange = function() {
-        if (this.readyState == 4 && this.status == 200) {
-            const response = JSON.parse(this.responseText);
-            if (response.cmd === 'PWD' || response.cmd === 'CD' || response.cmd === 'HOME') {
-                document.getElementById('pwdDisplay').innerText = 'Répertoire actuel : ' + response.content;
-            }
-        }
-    };
             xhttp.send();
         }
 
@@ -83,6 +76,30 @@
                 alert('Nom du fichier ou répertoire invalide');
             }
         }
+
+        // // Update the cd() function
+        // function cd() {
+        //     sendRequest('CD', {}, updateFileExplorer);
+        // }
+
+        // // Function to update the file explorer content
+        // function updateFileExplorer(content) {
+        //     const fileExplorer = document.getElementById('fileExplorer');
+
+        //     if (content) {
+        //         // Clear existing content
+        //         fileExplorer.innerHTML = '';
+
+        //         // Display the content in the file explorer
+        //         content.forEach(item => {
+        //             const listItem = document.createElement('li');
+        //             listItem.textContent = item;
+        //             fileExplorer.appendChild(listItem);
+        //         });
+        //     } else {
+        //         fileExplorer.innerHTML = 'Failed to load file explorer content.';
+        //     }
+        // }
 
         function listDir() {
             sendRequest('DIR');
@@ -155,11 +172,11 @@
 
 <body onLoad='BODY_onLoad()'>
     <div class="col-lg-12 mx-auto p-5 py-md-5">
-        <div class="">
+        <div class="text-center">
 
-            <div class="pb-4 text-center">
+            <div class="pb-4">
                 <div>
-                    <h1>Disk Multi-Utilisateurs</h1>
+                    <h1>ENT Multi-Utilisateurs</h1>
                 </div>
 
                 <div>
@@ -168,10 +185,6 @@
             </div>
 
             <div>
-                <div>
-                    DEBUG : Bryan / Dolhin
-                </div>
-
                 <div class="pt-2 input-group">
                     <span class="input-group-text" id="basic-addon1">Nom d'utilisateur</span>
                     <input class="form-control" type="text" id="USERNAME" placeholder="Nom d'utilisateur" required />
@@ -179,13 +192,13 @@
                 <div class="pt-4 input-group" id="show_hide_password">
                     <span class="input-group-text" id="basic-addon1">Mot de passe</span>
                     <input class="form-control" type="password" id="PASSWORD" placeholder="Mot de passe" required />
-                    <span class="input-group-text" id="togglePassword" style="cursor: pointer">
-                        <i class="fa fa-eye" id="passwordEye"></i>
+                    <span class="input-group-text">
+                        <i class="fa fa-eye" id="togglePassword" style="cursor: pointer"></i>
                     </span>
                 </div>
 
-                <div class="pt-2">
-                    <button class="btn btn-secondary" onClick="register()">
+                <div class="pt-4">
+                    <button class="btn btn-primary" onClick="register()">
                         S'enregistrer
                     </button>
 
@@ -193,12 +206,6 @@
                         Se connecter
                     </button>
 
-                    <button class="btn btn-danger" onClick='logout()'>
-                        Se déconnecter
-                    </button>
-                </div>
-
-                <div class="pt-4">
                     <button class="btn btn-primary" onClick='pwd()'>
                         PWD
                     </button>
@@ -217,6 +224,10 @@
 
                     <button class="btn btn-primary" onClick='whoAmI()'>
                         WHOAMI
+                    </button>
+
+                    <button class="btn btn-primary" onClick='logout()'>
+                        Se déconnecter
                     </button>
                 </div>
 
@@ -248,11 +259,12 @@
                     </button>
                 </div>
 
-                <div id="pwdDisplay" class="pt-4"></div>
+                <div class="pt-4">
+                    <textarea id="console_debug" rows="20" cols="60"></textarea>
+                </div>
+                
+                <!-- <ul id="fileExplorer"></ul> -->
 
-                <div class="form-group pt-2">
-                    <textarea class="form-control" id="console_debug" rows="10"></textarea>
-                  </div>
             </div>
         </div>
     </div>
@@ -262,10 +274,9 @@
 
 <script>
 const togglePassword = document.querySelector("#togglePassword");
-const passwordEye = document.querySelector("#passwordEye")
 const password = document.querySelector("#PASSWORD");
 
-// Listener de l'oeil
+// Lister de l'oeil
 togglePassword.addEventListener("click", function () {
    
   // Changer le type d'attribut du mot de passe
@@ -273,7 +284,7 @@ togglePassword.addEventListener("click", function () {
   password.setAttribute("type", type);
 
   // Modifier l'icône
-  passwordEye.classList.toggle('fa-eye');
-  passwordEye.classList.toggle('fa-eye-slash');
+  this.classList.toggle('fa-eye');
+  this.classList.toggle('fa-eye-slash');
 });
 </script>
